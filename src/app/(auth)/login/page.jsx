@@ -1,14 +1,29 @@
 'use client'
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 
 const LoginPage = () => {
     const {register, 
         handleSubmit,
         formState: {errors}} = useForm();
-    const handleLoginFunc = (data)=>{
-     console.log(data)    
+    const [isShowPassword, setIsShowPassword]=useState(false);
+    const handleLoginFunc =async (data)=>{
+    const {email,password} = data;
+    const { data:res, error } = await authClient.signIn.email({
+    email: email, // required
+    password: password, // required
+    rememberMe: true,
+    callbackURL: "/",
+}); 
+      if(error){
+        alert(error.message)
+      }if(res){
+        alert("Login successful")
+      }
     }
     return (
         <div className="container mx-auto bg-slate-100 min-h-[80vh] flex justify-center items-center">
@@ -20,9 +35,10 @@ const LoginPage = () => {
                     <input type="email" {...register("email", { required: "Email field is required"} )}  className="input" placeholder="Type here email" /> 
                      {errors.email && <p className="text-red-500">{errors.email.message}</p>}
                 </fieldset>
-                <fieldset className="fieldset">
+                <fieldset className="fieldset relative">
                     <legend className="fieldset-legend">Password</legend>
-                    <input type="password" {...register("password" , { required: "Password field is required"})}  className="input" placeholder="Type here password" /> 
+                    <input type={isShowPassword ? "text" : "password"} {...register("password" , { required: "Password field is required"})}  className="input" placeholder="Type here password" /> 
+                    <span className=" absolute right-2 top-5 cursor-pointer " onClick={()=> setIsShowPassword(!isShowPassword)}>{isShowPassword ? <FaEye /> : <FaEyeSlash/>}</span>
                     {errors.password && <p className="text-red-500">{errors.password.message}</p>}
                 </fieldset>
                 <button className="btn w-full bg-slate-800 text-white">Login</button>
